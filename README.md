@@ -14,3 +14,12 @@ confifure `~/.aws/credentials`
 * run `terraform init`
 * run `terraform plan`
 * run `terraform apply`
+
+
+#TODO:
+ - Create github repo - Done
+ - Create Lambda, SQS, SQS to lambda event config and ECR repo using TF - Done
+ - Create ECR image for DockerFile
+ - Trigger ECS task from SQS -> Lambda function
+ - Test end to end flow
+ - Add Arch diagram
