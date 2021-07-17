@@ -1,3 +1,11 @@
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+  region = data.aws_region.current.name
+}
+
+
 provider "aws" {
   region  = "us-east-1"
   profile = "default"
@@ -88,4 +96,31 @@ resource "aws_lambda_event_source_mapping" "event_source_mapping" {
 # ECR repository
 resource "aws_ecr_repository" "tf_task" {
   name                 = "tf-task"
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "tf-provisioning"
+}
+
+# ECS task definition
+resource "aws_ecs_task_definition" "task_definition" {
+  family = "tf-deployment-task"
+  container_definitions = jsonencode([
+    {
+      name      = "tf-deployment-task"
+      image     = "${local.account_id}.dkr.ecr.${local.region}.amazonaws.com/tf-task:latest"
+      requires_compatibilities = "FARGATE"
+      network_mode = "awsvpc"
+      cpu       = 10
+      memory    = 512
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+    },
+  ])
 }
