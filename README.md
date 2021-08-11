@@ -14,22 +14,44 @@ You'll find these steps on your ECR repository (tf-task)
 ### Terraform
 
 #### Pre-requisits
-confifure `~/.aws/credentials`
+- Configure `~/.aws/credentials`.
+- Add below per project configurations in SSM parameter store (/terraform/provisioning/environment-vars)
+```
+{
+   "projects":{
+      "AWS_ACCESS_KEY_ID":"",
+      "AWS_SECRET_ACCESS_KEY":"",
+      "name":"project-1",
+      "security_groups":[
+         ""
+      ],
+      "subnets":[
+         ""
+      ]
+   }
+}
+```
 
-#### steps
+#### Deployment steps
 * Add your lambda function code in `lambda.py`
 * run `zip lambda lambda.py`
 * run `terraform init`
 * run `terraform plan`
 * run `terraform apply`
 
+### Usage
+* Terraform apply for project-1:
+Add below message in SQS queue to trigger terraform apply for project-1
+```
+{"project":"project-1","command":"apply"}
+```
 
 #TODO:
  - Create github repo - Done
  - Create Lambda, SQS, SQS to lambda event config and ECR repo using TF - Done
  - Create ECR image for DockerFile - Done
- - Create VPC, Subnet, InternetGateway and attach it to VPC, RouteTable and it's Route, SubnetRouteTableAssociation and SecurityGroup
- - Create ECS cluster and task definition
- - Trigger ECS task from SQS -> Lambda function
- - Test end to end flow
+ - Create VPC, Subnet, InternetGateway and attach it to VPC, RouteTable and it's Route, SubnetRouteTableAssociation and SecurityGroup - Done
+ - Create ECS cluster and task definition - Done
+ - Trigger ECS task from SQS -> Lambda function - Done
+ - Test end to end flow - Done
  - Add Arch diagram

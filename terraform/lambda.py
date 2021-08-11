@@ -1,7 +1,55 @@
 import json
 import boto3
+from pprint import pprint
 
-client = boto3.client('ecs')
+ecs = boto3.client('ecs')
+ssm = boto3.client('ssm')
 
 def handler(event, context):
-    print("Received event: " + json.dumps(event, indent=2))
+    pprint("Received event: " + json.dumps(event, indent=2))
+
+    config = ssm.get_parameter(Name='/terraform/provisioning/environment-vars',WithDecryption=True)["Parameter"]["Value"]
+    config = json.loads(config)
+
+    payload = json.loads(event["Records"][0]["body"])
+    project = payload["project"]
+
+    ecs.run_task(
+        cluster='tf-provisioning',
+        count=1,
+        enableECSManagedTags=True,
+        launchType='FARGATE',
+        networkConfiguration={
+            'awsvpcConfiguration': {
+                'subnets': config["projects"][project]["subnets"],
+                'securityGroups': config[project]["security_groups"],
+                'assignPublicIp': 'ENABLED'
+            }
+        },
+        overrides={
+            'containerOverrides': [
+                {
+                    'name': 'tf-deployment-task',
+                    'environment': [
+                        {
+                            'name': 'AWS_ACCESS_KEY_ID',
+                            'value': config[project]["AWS_ACCESS_KEY_ID"]
+                        },
+                        {
+                            'name': 'AWS_SECRET_ACCESS_KEY',
+                            'value': config[project]["AWS_SECRET_ACCESS_KEY"]
+                        },
+                        {
+                            'name': 'COMMAND',
+                            'value': payload["command"]
+                        },
+                        {
+                            'name': 'PROJECT',
+                            'value': project
+                        },
+                    ]
+                },
+            ]
+        },
+        taskDefinition='tf-deployment-task-def'
+    )

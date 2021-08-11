@@ -30,26 +30,33 @@ resource "aws_iam_role" "iam_for_lambda" {
         Effect = "Allow"
         Sid    = ""
         Principal = {
-          Service = "lambda.amazonaws.com"
+          Service = ["ecs-tasks.amazonaws.com", "lambda.amazonaws.com"]
         }
       },
     ]
   })
 
   inline_policy {
-    name = "sqs-policies"
+    name = "lambda-policies"
 
     policy = jsonencode({
       Version = "2012-10-17"
       Statement = [
         {
           Action   = [
-            "sqs:ReceiveMessage",
-            "sqs:DeleteMessage",
-            "sqs:GetQueueAttributes",
+            "iam:PassRole",
+            "ecs:RunTask",
+            "ecs:ListTasks",
+            "ecs:StartTask",
             "logs:CreateLogGroup",
             "logs:CreateLogStream",
-            "logs:PutLogEvents"
+            "logs:PutLogEvents",
+            "ssm:DescribeParameters",
+            "ssm:GetParameter",
+            "ssm:GetParameters",
+            "sqs:ReceiveMessage",
+            "sqs:DeleteMessage",
+            "sqs:GetQueueAttributes"
             ]
           Effect   = "Allow"
           Resource = "*"
@@ -92,38 +99,6 @@ resource "aws_lambda_event_source_mapping" "event_source_mapping" {
   batch_size       = 1
 }
 
-
-# ECR repository
-resource "aws_ecr_repository" "tf_task" {
-  name                 = "tf-task"
-}
-
-# ECS Cluster
-resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "tf-provisioning"
-}
-
-# ECS task definition
-resource "aws_ecs_task_definition" "task_definition" {
-  family = "tf-deployment-task"
-  container_definitions = jsonencode([
-    {
-      name      = "tf-deployment-task"
-      image     = "${local.account_id}.dkr.ecr.${local.region}.amazonaws.com/tf-task:latest"
-      requires_compatibilities = "FARGATE"
-      network_mode = "awsvpc"
-      cpu       = 10
-      memory    = 512
-      essential = true
-      portMappings = [
-        {
-          containerPort = 80
-          hostPort      = 80
-        }
-      ]
-    },
-  ])
-}
 
 
 # VPC and Networking
@@ -169,4 +144,97 @@ resource "aws_security_group" "sg" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+}
+
+# IAM
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name = "tf-provisioning-ecsTaskExecutionRole"
+ 
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+}
+ 
+resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+  name = "tf-provisioning-ecsTaskRole"
+ 
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+}
+
+
+# ECR repository
+resource "aws_ecr_repository" "tf_task" {
+  name                 = "tf-task"
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "tf-provisioning"
+}
+
+# ECS task definition
+resource "aws_ecs_task_definition" "task_definition" {
+  family = "tf-deployment-task-def"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  network_mode = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu       = 256
+  memory    = 512
+  container_definitions = jsonencode([
+    {
+      name      = "tf-deployment-task"
+      image     = "${local.account_id}.dkr.ecr.${local.region}.amazonaws.com/tf-task:latest"
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group = "/ecs/tf-deployment-task-def"
+          awslogs-region = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+    }
+    },
+  ])
+}
+
+resource "aws_cloudwatch_log_group" "lg" {
+  name = "/ecs/tf-deployment-task-def"
 }

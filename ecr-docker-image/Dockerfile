@@ -6,7 +6,8 @@ COPY . /mnt
 
 USER root
 
-RUN apk add --no-cache ca-certificates \
+RUN apk add --no-cache bash \
+      ca-certificates \
       curl \
       git \
       openssl \
@@ -14,10 +15,12 @@ RUN apk add --no-cache ca-certificates \
       openssl-dev \
       rsync \
       wget \
+      httpie \
+      terraform \
   && rm -rf /var/cache/apk/* \
 
 USER worker
 
 WORKDIR /mnt
 
-CMD /mnt/task.sh
+CMD ["/mnt/task.sh"]
