@@ -1,3 +1,7 @@
+## Architecture
+
+![arch](static/images/arch.jpg?raw=true "Architecture")
+
 ## Steps
 
 ### Docker
@@ -54,4 +58,4 @@ Add below message in SQS queue to trigger terraform apply for project-1
  - Create ECS cluster and task definition - Done
  - Trigger ECS task from SQS -> Lambda function - Done
  - Test end to end flow - Done
- - Add Arch diagram
+ - Add Arch diagram - Done
