@@ -1,5 +1,5 @@
 ## Architecture
-
+ 
 ![arch](static/images/arch.jpg?raw=true "Architecture")
 
 ## Steps
