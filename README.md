@@ -5,7 +5,7 @@
 ## Steps
 
 ### Docker
-#### Pre-requisits
+#### Pre-requisits 
 Install Docker and make sure Docker daemon is running.
  
 #### steps
