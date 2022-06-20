@@ -11,7 +11,7 @@ Install Docker and make sure Docker daemon is running.
 #### steps
 You'll find these steps on your ECR repository (tf-task)
 * aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your-account-number>.dkr.ecr.us-east-1.amazonaws.com
-* docker build -t tf-task .
+* docker build --platform=linux/amd64 -t tf-task .
 * docker tag tf-task:latest <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
 * docker push <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
 
@@ -23,15 +23,17 @@ You'll find these steps on your ECR repository (tf-task)
 ```
 {
    "projects":{
-      "AWS_ACCESS_KEY_ID":"",
-      "AWS_SECRET_ACCESS_KEY":"",
-      "name":"project-1",
-      "security_groups":[
-         ""
-      ],
-      "subnets":[
-         ""
-      ]
+      "yogingale/tf-sample-project-1": {
+         "AWS_ACCESS_KEY_ID":"",
+         "AWS_SECRET_ACCESS_KEY":"",
+         "name":"tf-sample-project-1",
+         "security_groups":[
+            ""
+         ],
+         "subnets":[
+            ""
+         ]
+      }
    }
 }
 ```
@@ -47,8 +49,19 @@ You'll find these steps on your ECR repository (tf-task)
 * Terraform apply for project-1:
 Add below message in SQS queue to trigger terraform apply for project-1
 ```
-{"project":"project-1","command":"apply"}
+{
+   "project":"yogingale/tf-sample-project-1",
+   "command":"apply",
+   "project_config":{
+      "aws_region":"us-east-1",
+      "bucket_name":"my-tf-test-bucket-using-ecs-task",
+      "acl":"private"
+   }
+}
 ```
+- `project`: Name of project
+- `command`: Terraform command 
+- `project_config`: Terraform project config
 
 #TODO:
  - Create github repo - Done

@@ -17,6 +17,7 @@ RUN apk add --no-cache bash \
       wget \
       httpie \
       terraform \
+      jq \
   && rm -rf /var/cache/apk/* \
 
 USER worker

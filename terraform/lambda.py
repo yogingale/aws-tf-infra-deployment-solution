@@ -22,7 +22,7 @@ def handler(event, context):
         networkConfiguration={
             'awsvpcConfiguration': {
                 'subnets': config["projects"][project]["subnets"],
-                'securityGroups': config[project]["security_groups"],
+                'securityGroups': config["projects"][project]["security_groups"],
                 'assignPublicIp': 'ENABLED'
             }
         },
@@ -33,11 +33,11 @@ def handler(event, context):
                     'environment': [
                         {
                             'name': 'AWS_ACCESS_KEY_ID',
-                            'value': config[project]["AWS_ACCESS_KEY_ID"]
+                            'value': config["projects"][project]["AWS_ACCESS_KEY_ID"]
                         },
                         {
                             'name': 'AWS_SECRET_ACCESS_KEY',
-                            'value': config[project]["AWS_SECRET_ACCESS_KEY"]
+                            'value': config["projects"][project]["AWS_SECRET_ACCESS_KEY"]
                         },
                         {
                             'name': 'COMMAND',
@@ -46,6 +46,10 @@ def handler(event, context):
                         {
                             'name': 'PROJECT',
                             'value': project
+                        },
+                        {
+                            'name': 'PROJECT_CONFIG',
+                            'value': json.dumps(payload["project_config"])
                         },
                     ]
                 },
