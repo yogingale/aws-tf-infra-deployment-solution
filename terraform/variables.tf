@@ -1,4 +1,4 @@
-# variable "tf_ssm_env_vars" {
-#   type        = string
-#   description = "Environment variables for terraform provisioning. Add this in key value pair like {'foo':'bar'}."
-# }
+variable "s3_backend_bucket" {
+  type        = string
+  description = "S3 bucket used in S3 backned to store statefiles."
+}
