@@ -2,22 +2,19 @@
 
 ![arch](static/images/arch.jpg?raw=true "Architecture")
 
-## Steps
+- [Installation Steps](#installation-steps)
+  - [Terraform](#terraform)
+    - [TF Pre-requisits](#tf-pre-requisits)
+    - [TF Deployment steps](#tf-deployment-steps)
+  - [Docker](#docker)
+    - [Docker Pre-requisits](#docker-pre-requisits)
+    - [Docker Deployment steps](#docker-deployment-steps)
+- [Usage](#usage)
 
-### Docker
-#### Pre-requisits
-Install Docker and make sure Docker daemon is running.
-
-#### steps
-You'll find these steps on your ECR repository (tf-task)
-* aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your-account-number>.dkr.ecr.us-east-1.amazonaws.com
-* docker build --platform=linux/amd64 -t tf-task .
-* docker tag tf-task:latest <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
-* docker push <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
+## Installation Steps
 
 ### Terraform
-
-#### Pre-requisits
+#### TF Pre-requisits
 - Configure `~/.aws/credentials`.
 - Add below per project configurations in SSM parameter store (/terraform/provisioning/environment-vars)
 ```
@@ -32,20 +29,32 @@ You'll find these steps on your ECR repository (tf-task)
          ],
          "subnets":[
             ""
-         ]
+         ],
+         "s3_backend_bucket": "Name of s3 bucket used for backend (Check s3-backend.tf)"
       }
    }
 }
 ```
 
-#### Deployment steps
+#### TF Deployment steps
 * Add your lambda function code in `lambda.py`
 * run `zip lambda lambda.py`
-* run `terraform init`
+* run `terraform init --backend-config="bucket=BACKEND-BUCKET-NAME"` (Add this bucket name from terraform.tfvars.json file and SSM)
 * run `terraform plan`
 * run `terraform apply`
 
-### Usage
+### Docker
+#### Docker Pre-requisits
+Install Docker and make sure Docker daemon is running.
+
+#### Docker Deployment steps
+You'll find these steps on your ECR repository (`tf-task`)
+* aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your-account-number>.dkr.ecr.us-east-1.amazonaws.com
+* docker build --platform=linux/amd64 -t tf-task .
+* docker tag tf-task:latest <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
+* docker push <your-account-number>.dkr.ecr.us-east-1.amazonaws.com/tf-task:latest
+
+## Usage
 * Terraform apply for project-1:
 Add below message in SQS queue to trigger terraform apply for project-1
 ```
@@ -61,14 +70,4 @@ Add below message in SQS queue to trigger terraform apply for project-1
 ```
 - `project`: Name of project
 - `command`: Terraform command 
-- `project_config`: Terraform project config
-
-#TODO:
- - Create github repo - Done
- - Create Lambda, SQS, SQS to lambda event config and ECR repo using TF - Done
- - Create ECR image for DockerFile - Done
- - Create VPC, Subnet, InternetGateway and attach it to VPC, RouteTable and it's Route, SubnetRouteTableAssociation and SecurityGroup - Done
- - Create ECS cluster and task definition - Done
- - Trigger ECS task from SQS -> Lambda function - Done
- - Test end to end flow - Done
- - Add Arch diagram - Done
+- `project_config`: Terraform config to be passed as variables

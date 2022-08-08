@@ -51,6 +51,10 @@ def handler(event, context):
                             'name': 'PROJECT_CONFIG',
                             'value': json.dumps(payload["project_config"])
                         },
+                        {
+                            'name': 'BACKEND_BUCKET',
+                            'value': config["projects"][project]["s3_backend_bucket"]
+                        },
                     ]
                 },
             ]

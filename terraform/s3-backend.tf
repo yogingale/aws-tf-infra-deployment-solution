@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "tf-provisioning-backend"
+  bucket = var.s3_backend_bucket # Add this name in backend of child projects (Via SSM)
 
   versioning {
     enabled = true
@@ -19,8 +19,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
 
 terraform {
   backend "s3" {
-    bucket = "tf-provisioning-backend"
-    key    = "main-project"
+    key    = "main-project/terraform.tfstate"
     region = "us-east-1"
   }
 }
