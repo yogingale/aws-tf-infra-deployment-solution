@@ -19,18 +19,23 @@
 - Add below per project configurations in SSM parameter store (/terraform/provisioning/environment-vars)
 ```
 {
-   "projects":{
-      "yogingale/tf-sample-project-1": {
+   "projects": {
+      "my-app-sdc-dev" : {
+         "application_name": "my-app-sdc",
+         "application_env": "dev",
+         "git_org": "yogingale",
          "AWS_ACCESS_KEY_ID":"",
          "AWS_SECRET_ACCESS_KEY":"",
-         "name":"tf-sample-project-1",
          "security_groups":[
             ""
          ],
          "subnets":[
             ""
          ],
-         "s3_backend_bucket": "Name of s3 bucket used for backend (Check s3-backend.tf)"
+         "ami":{
+            "redhat7": "111", # OS
+            "windows": "222"
+         }
       }
    }
 }
@@ -59,15 +64,40 @@ You'll find these steps on your ECR repository (`tf-task`)
 Add below message in SQS queue to trigger terraform apply for project-1
 ```
 {
-   "project":"yogingale/tf-sample-project-1",
-   "command":"apply",
-   "project_config":{
-      "aws_region":"us-east-1",
-      "bucket_name":"my-tf-test-bucket-using-ecs-task",
-      "acl":"private"
-   }
+   "projects":[
+      {
+         "application_name": "my-app-sdc",
+         "application_env": "dev",
+         "resources": [
+            {
+               "id": "123",
+               "provider": "aws",
+               "resource_type": "s3",
+               "config": {
+                  "aws_region":"us-east-1",
+                  "bucket_name":"my-tf-test-bucket-using-ecs-task",
+                  "acl":"private"
+               }
+            },
+            {
+               "id": "456",
+               "provider": "aws",
+               "resource_type": "ec2",
+               "config": {
+                  "name": "N-abc",
+                  "os": "redhat",
+                  "instance_type": ""
+               }
+            }
+         ]
+      }
+   ]
 }
 ```
 - `project`: Name of project
 - `command`: Terraform command 
 - `project_config`: Terraform config to be passed as variables
+
+## Template terraform repos:
+- s3: https://github.com/yogingale/aws-s3-terraform
+- ec2: https://github.com/yogingale/aws-ec2-terraform
