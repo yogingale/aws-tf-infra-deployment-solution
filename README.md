@@ -33,7 +33,7 @@
             ""
          ],
          "ami":{
-            "redhat8-linux": "ami-0238411fb452f8275",
+            "redhat8-linux": "ami-06640050dc3f556bb",
             "windows19": "ami-05912b6333beaa478",
             "windows22": "ami-027f2f92dac883acf",
             "amazon-linux2": "ami-090fa75af13c156b4"
@@ -86,7 +86,7 @@ Add below message in SQS queue to trigger terraform apply for project-1
                "provider": "aws",
                "resource_type": "ec2",
                "config": {
-                  "name": "N-abc",
+                  "Name": "abc",
                   "os": "amazon-linux2",
                   "instance_type": "t1.micro"
                }
