@@ -18,7 +18,7 @@ def get_resource_config(type, config, app_config, app_env):
             "security_group":app_config["security_groups"][0],
             "subnet_id":app_config["subnets"][0],
             "resource_tags":{
-                "name": resource_config["name"],
+                "Name": resource_config["name"],
                 "environment":app_env
             }
         }
