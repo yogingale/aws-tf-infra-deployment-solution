@@ -95,7 +95,7 @@ Add below message in SQS queue to trigger terraform apply for project-1
       }
    ]
 }
-
+```
 ## Template terraform repos:
 - s3: https://github.com/yogingale/aws-s3-terraform
 - ec2: https://github.com/yogingale/aws-ec2-terraform
