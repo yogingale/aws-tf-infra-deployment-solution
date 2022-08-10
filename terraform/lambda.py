@@ -5,6 +5,25 @@ from pprint import pprint
 ecs = boto3.client('ecs')
 ssm = boto3.client('ssm')
 
+def get_resource_config(type, config, app_config, app_env):
+    """Get resource config based on resource type."""
+    resource_config = config["config"]
+    if type == "s3":
+        return resource_config
+    elif type == "ec2":
+        app_os = resource_config["os"]
+        return {
+            "ami":app_config["ami"][app_os],
+            "instance_type":resource_config["instance_type"],
+            "security_group":app_config["security_groups"][0],
+            "subnet_id":app_config["subnets"][0],
+            "resource_tags":{
+                "name": resource_config["name"],
+                "environment":app_env
+            }
+        }
+
+
 def handler(event, context):
     pprint("Received event: " + json.dumps(event, indent=2))
 
@@ -30,7 +49,7 @@ def handler(event, context):
             git_org = app_config["git_org"]
 
             backend_s3_key = f"{app_name}-{app_env}-{resource_type}-{id}/terraform.tfstate"
-            resource_config = resource["config"]
+            resource_config = get_resource_config(resource_type, resource, app_config, app_env)
 
             ecs.run_task(
                 cluster='tf-provisioning',

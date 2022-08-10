@@ -33,8 +33,10 @@
             ""
          ],
          "ami":{
-            "redhat7": "111", # OS
-            "windows": "222"
+            "redhat8-linux": "ami-0238411fb452f8275",
+            "windows19": "ami-05912b6333beaa478",
+            "windows22": "ami-027f2f92dac883acf",
+            "amazon-linux2": "ami-090fa75af13c156b4"
          }
       }
    }
@@ -85,18 +87,14 @@ Add below message in SQS queue to trigger terraform apply for project-1
                "resource_type": "ec2",
                "config": {
                   "name": "N-abc",
-                  "os": "redhat",
-                  "instance_type": ""
+                  "os": "amazon-linux2",
+                  "instance_type": "t1.micro"
                }
             }
          ]
       }
    ]
 }
-```
-- `project`: Name of project
-- `command`: Terraform command 
-- `project_config`: Terraform config to be passed as variables
 
 ## Template terraform repos:
 - s3: https://github.com/yogingale/aws-s3-terraform
